@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Validate GitHub Action and VM Integration
+    - name: Enable Passwordless Login
       env:
         APP_HOST: ${{ secrets.APP_HOST }}
         APP_SSH_USER: ${{ secrets.APP_SSH_USER }}
@@ -24,6 +24,13 @@ jobs:
       run: |
         mkdir -p /tmp/keys && chmod 700 /tmp/keys
         echo "$APP_SSH_SECRET_KEY" > /tmp/keys/private_key && chmod 600 /tmp/keys/private_key
+    - name: Deploy Application
+      env:
+        APP_HOST: ${{ secrets.APP_HOST }}
+        APP_SSH_USER: ${{ secrets.APP_SSH_USER }}
+        APP_SSH_SECRET_KEY: ${{ secrets.APP_SSH_SECRET_KEY }}
+      run: |
         ssh -o StrictHostKeyChecking=no -i /tmp/keys/private_key ${APP_SSH_USER}@${APP_HOST} '
-          echo `hostname`
+          mkdir -p ~/cicd-demo
         '
+        scp -i /tmp/keys/private_key * ${APP_SSH_USER}@${APP_HOST}:~/cicd-demo
